@@ -6,8 +6,6 @@ Este projeto implementa a arquitetura de **Configuração Externalizada e Centra
 
 ### Questões da Atividade (Análise e Justificativa)
 
-#### Explique o propósito, funcionalidade do projeto e justifique sua necessidade no cenário do banco digital
-
 O **propósito principal** deste projeto é estabelecer um ponto de controle único para todas as configurações operacionais da aplicação, removendo-as do código-fonte ou do JAR. A **funcionalidade** essencial é permitir que o **Config Server** atue como um *hub* central, fornecendo o conjunto correto de propriedades (ex: senhas, URLs, chaves) ao **Account Service** em tempo real, via HTTP.
 
 **No cenário de um banco digital, isso é indispensável** e não negociável:
