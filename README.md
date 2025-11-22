@@ -30,22 +30,47 @@ Em um ambiente bancário, a integridade dos dados e a segurança são a priorida
 2.  **Consistência e Versionamento:** Como o servidor utiliza um backend de arquivos versionado (nosso `config-repo`), qualquer alteração de configuração é **rastreável e reversível**. Se uma mudança causar falhas em PROD, podemos reverter para a versão anterior imediatamente, o que é fundamental para o compliance.
 
 
-### Validação e Demonstrações Técnicas
 
-O projeto foi validado com sucesso, demonstrando a funcionalidade de microsserviços. Os comandos abaixo provam a implementação dos Requisitos C e D.(Pré-requisito): Inicie o Config Server (8888) com a VM Option da chave de criptografia e o Account Service (8080) (que está configurado para o perfil dev).
+## Validação e Demonstrações Técnicas
 
-1. Prova de Refresh Dinâmico (Requisito C)O Account Service deve atualizar a propriedade message em tempo real, sem restart.PassoAçãoInicialVerifique o valor inicial da propriedade message no perfil dev.Ação ManualAltere o valor da message no arquivo config-repo/account-service-dev.properties.FinalVerifique se a nova mensagem foi carregada.Comandos de Validação (cURL):Bash# 1. Verifique a mensagem inicial:
-curl http://localhost:8080/message
+O projeto foi validado com sucesso, demonstrando a funcionalidade de microsserviços. Os comandos abaixo provam a implementação dos Requisitos C e D.
 
-# 2. Dispare o recarregamento (Refresh):
-curl -X POST http://localhost:8080/actuator/refresh
+**(Pré-requisito):** Inicie o **Config Server (8888)** com a VM Option da chave de criptografia e o **Account Service (8080)** (que está configurado para o perfil `dev`).
 
-# 3. Verifique a nova mensagem (Deve mudar sem restart):
-curl http://localhost:8080/message
-2. Prova de Criptografia e Decriptografia (Requisito D)O servidor deve decifrar a senha armazenada no formato {cipher} e fornecê-la ao cliente.PassoAçãoValidação da Criptografia (Servidor):Prova que o mecanismo de segurança do servidor está ativo (requer raw/text no body).Verificação da Decriptografia (Client):Altere o cliente para o perfil prod e reinicie. O endpoint /db-password injeta a senha que o servidor decifrou.Comandos de Validação (cURL):Bash# 1. Validação do Mecanismo de Criptografia:
-# (Deve retornar a string criptografada)
-curl -X POST http://localhost:8888/encrypt -d "senha-do-banco-real"
+### 1\. Prova de Refresh Dinâmico (Requisito C)
 
-# 2. Verifique a Decriptografia no Cliente (Após reiniciar o Account Service no perfil 'prod'):
-curl http://localhost:8080/db-password
-Saída Esperada: Status do Ambiente: PROD | Senha Decriptografada: senha-do-banco-real
+O **Account Service** deve atualizar a propriedade `message` em tempo real, sem restart.
+
+  * **Ação Inicial:** Verifique o valor inicial da propriedade `message` no perfil `dev`.
+    ```bash
+    # 1. Verifique a mensagem inicial:
+    curl http://localhost:8080/message
+    ```
+  * **Ação Manual:** Altere o valor da `message` no arquivo **`config-repo/account-service-dev.properties`**.
+  * **Ação Final (Refresh):** Dispare o recarregamento do Bean `AccountController` e verifique a nova mensagem.
+    ```bash
+    # 2. Dispare o recarregamento (Refresh):
+    curl -X POST http://localhost:8080/actuator/refresh
+
+    # 3. Verifique a nova mensagem (Deve mudar sem restart):
+    curl http://localhost:8080/message
+    ```
+
+
+### 2\. Prova de Criptografia e Decriptografia (Requisito D)
+
+O servidor deve decifrar a senha armazenada no formato `{cipher}` e fornecê-la ao cliente.
+
+  * **Validação da Criptografia (Servidor):** Prova que o mecanismo de segurança do servidor está ativo (requer `raw/text` no body).
+    ```bash
+    # 1. Validação do Mecanismo de Criptografia:
+    # (Deve retornar a string criptografada)
+    curl -X POST http://localhost:8888/encrypt -d "senha-do-banco-real"
+    ```
+  * **Verificação da Decriptografia (Client):** Altere o cliente para o perfil **`prod`** e **reinicie**. O endpoint `/db-password` injeta a senha que o servidor decifrou.
+    ```bash
+    # 2. Verifique a Decriptografia no Cliente (Após reiniciar o Account Service no perfil 'prod'):
+    curl http://localhost:8080/db-password
+    ```
+
+**Saída Esperada:** `Status do Ambiente: PROD | Senha Decriptografada: senha-do-banco-real`
